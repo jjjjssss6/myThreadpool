@@ -59,11 +59,10 @@ void threadpoolTest()
     threadpool pool;
     std::function<void()> f1 = bind(print, string("hello"));
     std::function<void()> f2 = bind(print, string("world"));
-    pool.submit(f1);
-    pool.submit(f2);
-    int ti = 0;
-    this_thread::yield();
-    // cerr << "here" << '\n';
+    auto ans1 = pool.submit(f1);
+    auto ans2 = pool.submit(f2);
+    ans1.get();
+    ans2.get();
 }
 int main()
 {

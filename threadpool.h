@@ -3,12 +3,14 @@
 #include <vector>
 #include <thread>
 #include <iostream>
+#include <atomic>
+#include <future>
 #include "safeQueue.h"
 
 class threadpool
 {
 private:
-    bool done;
+    std::atomic_bool done;
     int threadNum;
     std::vector<std::thread> thds;
     safeQueue<std::function<void()>> workers;
@@ -44,9 +46,21 @@ public:
                 thds[i].join();
         }
     }
-    template<typename Func>
-    void submit(Func f)
+    // template<typename Func>
+    // void submit(Func f)
+    // {
+    //     workers.push(std::function<void()>(f));
+    // }
+
+    template<typename Func, typename... Args>
+    auto submit(Func &&f, Args &&...args) -> std::future<typename std::result_of<Func(Args...)>::type>
     {
-        workers.push(std::function<void()>(f));
+        using resultType = typename std::result_of<Func(Args...)>::type;
+        auto task = std::make_shared<std::packaged_task<resultType()>>(
+            std::bind(std::forward<Func>(f), std::forward<Args>(args)...)
+        );
+        auto ans = task->get_future();
+        workers.push([task](){(*task)();});
+        return ans;
     }
 };
