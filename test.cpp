@@ -1,11 +1,15 @@
 #include <bits/stdc++.h>
+#include "threadpool.h"
 #include "safeQueue.h"
-#include <thread>
+
 
 using namespace std;
 
 
-
+void print(string s)
+{
+    cout << s << '\n';
+}
 void solve()
 {
     cout << thread::hardware_concurrency() << '\n';
@@ -50,13 +54,25 @@ void queueTest()
     }
     cout << "AC" << '\n';
 }
+void threadpoolTest()
+{
+    threadpool pool;
+    std::function<void()> f1 = bind(print, string("hello"));
+    std::function<void()> f2 = bind(print, string("world"));
+    pool.submit(f1);
+    pool.submit(f2);
+    int ti = 0;
+    this_thread::yield();
+    // cerr << "here" << '\n';
+}
 int main()
 {
     int t = 1;
     while (t--)
     {
         // solve();
-        queueTest();
+        // queueTest();
+        threadpoolTest();
     }
     return 0;
 }
